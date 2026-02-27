@@ -37,6 +37,11 @@ data "aws_secretsmanager_secret" "datadog_api_key" {
   name = "${terraform.workspace == "live" ? "live" : "dev"}/datadog-agent-service"
 }
 
+moved {
+  from = aws_lambda_function.lambda_function
+  to   = module.lambda-datadog.aws_lambda_function.this
+}
+
 module "lambda-datadog" {
   source  = "DataDog/lambda-datadog/aws"
   version = "4.6.0"
