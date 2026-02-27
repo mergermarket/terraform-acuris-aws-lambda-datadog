@@ -64,7 +64,7 @@ module "lambda-datadog" {
 
   tracing_config_mode = var.tracing_mode
 
-  dead_letter_config_target_arn = var.dead_letter_queue_arn != "" ? var.dead_letter_queue_arn : ""  
+  dead_letter_config_target_arn = var.dead_letter_queue_arn != "" ? var.dead_letter_queue_arn : null
 
   environment_variables = merge(
     var.lambda_env, 
