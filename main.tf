@@ -82,7 +82,7 @@ module "lambda-datadog" {
 resource "aws_cloudwatch_log_group" "lambda_loggroup" {
   name              = "/aws/lambda/${var.function_name}"
   retention_in_days = 7
-  depends_on        = [aws_lambda_function.lambda_function]
+  depends_on        = [module.lambda-datadog.aws_lambda_function.this]
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "kinesis_log_stream" {
@@ -91,5 +91,5 @@ resource "aws_cloudwatch_log_subscription_filter" "kinesis_log_stream" {
   destination_arn = var.datadog_log_subscription_arn
   log_group_name  = aws_cloudwatch_log_group.lambda_loggroup.name
   filter_pattern  = var.log_subscription_filter
-  depends_on      = [aws_lambda_function.lambda_function]
+  depends_on      = [module.lambda-datadog.aws_lambda_function.this]
 }

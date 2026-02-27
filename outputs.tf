@@ -1,9 +1,9 @@
 output "lambda_arn" {
-  value = aws_lambda_function.lambda_function.arn
+  value = module.lambda-datadog.aws_lambda_function.this.arn
 }
 
 output "lambda_function_name" {
-  value = aws_lambda_function.lambda_function.function_name
+  value = module.lambda-datadog.aws_lambda_function.this.function_name
 }
 
 output "lambda_iam_role_name" {
@@ -11,5 +11,5 @@ output "lambda_iam_role_name" {
 }
 
 output "lambda_invoke_arn" {
-  value = aws_lambda_function.lambda_function.invoke_arn
+  value = module.lambda-datadog.aws_lambda_function.this.invoke_arn
 }
