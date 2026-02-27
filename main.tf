@@ -37,8 +37,9 @@ data "aws_secretsmanager_secret" "datadog_api_key" {
   name = "${terraform.workspace == "live" ? "live" : "dev"}/datadog-agent-service"
 }
 
-resource "aws_lambda_function" "lambda_function" {
-  image_uri                      = var.image_uri
+module "lambda-datadog" {
+  source  = "DataDog/lambda-datadog/aws"
+  version = "4.6.0"
   s3_bucket                      = var.s3_bucket
   s3_key                         = var.s3_key
   function_name                  = var.function_name
@@ -53,37 +54,24 @@ resource "aws_lambda_function" "lambda_function" {
   layers                         = concat(var.layers, local.datadog_lambdajs_layer, local.datadog_extension_layer)
   architectures                  = var.architectures
 
-  dynamic "image_config" {
-    for_each = var.image_uri != null ? [1] : []
-    content {
-      command           = var.image_config_command
-      entry_point       = var.image_config_entry_point
-      working_directory = var.image_config_working_directory
+  vpc_config_security_group_ids = local.security_group_ids
+  vpc_config_subnet_ids = var.subnet_ids
+
+  tracing_config_mode = var.tracing_mode
+
+  dead_letter_config_target_arn = var.dead_letter_queue_arn != "" ? var.dead_letter_queue_arn : ""  
+
+  environment_variables = merge(
+    var.lambda_env, 
+    local.datadog_extension_env, 
+    local.datadog_lambdajs_env,
+    {
+      "DD_ENV"     : terraform.workspace
+      "DD_SERVICE" : var.function_name
+      "DD_SITE"    : "datadoghq.com"
+      "DD_VERSION" : "1.0.0"
     }
-  }
-
-  dynamic "vpc_config" {
-    for_each = local.security_group_ids != null ? [1] : []
-    content {
-      subnet_ids         = var.subnet_ids
-      security_group_ids = local.security_group_ids
-    }
-  }
-
-  environment {
-    variables = merge(var.lambda_env, local.datadog_extension_env, local.datadog_lambdajs_env)
-  }
-
-  tracing_config {
-    mode = var.tracing_mode
-  }
-
-  dynamic "dead_letter_config" {
-    for_each = var.dead_letter_queue_arn != "" ? [1] : []  
-    content {
-      target_arn = var.dead_letter_queue_arn
-    }
-  }
+  )
 }
 
 resource "aws_cloudwatch_log_group" "lambda_loggroup" {
