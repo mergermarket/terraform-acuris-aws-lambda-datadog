@@ -34,7 +34,7 @@ data "aws_security_group" "default" {
 }
 
 data "aws_secretsmanager_secret" "datadog_api_key" {
-  name = "${terraform.workspace == "live" ? "live" : "dev"}/datadog-agent-service"
+  name = "${terraform.workspace == "live" ? "live" : "dev"}/datadog-api-key"
 }
 
 moved {
